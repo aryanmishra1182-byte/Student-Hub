@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tasks | Student Hub</title>
+  <style>
+    body {
+      margin:0; font-family:'Segoe UI',sans-serif;
+      display:flex; height:100vh;
+      background:#f4f4f9; color:#333;
+    }
+    /* Sidebar */
+    .sidebar {
+      width:220px; background:#2c2c2c; color:#f4f4f9;
+      display:flex; flex-direction:column; padding:1rem;
+    }
+    .sidebar h2 { margin:0 0 1rem; font-size:1.2rem; }
+    .sidebar a {
+      color:#f4f4f9; text-decoration:none; padding:0.6rem;
+      border-radius:6px; margin-bottom:0.5rem; display:block;
+      transition:background 0.3s;
+    }
+    .sidebar a:hover { background:#4a90e2; }
+
+    /* Top bar */
+    .topbar {
+      flex:1; display:flex; flex-direction:column;
+    }
+    .hotbar {
+      background:#fff; padding:0.8rem 1rem;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid #ddd;
+    }
+    .hotbar input {
+      width:60%; padding:0.5rem;
+      border:1px solid #ccc; border-radius:8px;
+    }
+    .hotbar .bell {
+      font-size:1.5rem; cursor:pointer; position:relative;
+    }
+    .bell-indicator {
+      position:absolute; top:0; right:0;
+      width:12px; height:12px; background:red;
+      border-radius:50%; box-shadow:0 0 6px rgba(255,0,0,0.6);
+    }
+
+    /* Filters */
+    .filters {
+      display:flex; gap:1rem; padding:1rem; background:#fafafa;
+    }
+    .filters button {
+      border:none; padding:0.5rem 1rem;
+      border-radius:6px; cursor:pointer;
+      background:#eee; transition:background 0.3s;
+    }
+    .filters button:hover { background:#4a90e2; color:white; }
+
+    /* Task list */
+    .tasks {
+      flex:1; overflow-y:auto; padding:1rem;
+    }
+    .task {
+      display:flex; align-items:center; gap:0.5rem;
+      background:white; padding:0.6rem; margin-bottom:0.5rem;
+      border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    }
+    .task input[type="checkbox"] { transform:scale(1.2); }
+    .task input[type="text"] {
+      flex:1; border:none; background:transparent;
+      font-size:1rem;
+    }
+    .task select {
+      border:1px solid #ccc; border-radius:4px; padding:0.3rem;
+    }
+    .task button {
+      border:none; background:#e74c3c; color:white;
+      border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;
+    }
+
+    /* Progress bar */
+    .progress-container {
+      padding:1rem; background:#fafafa;
+    }
+    .progress-bar {
+      height:20px; background:#eee; border-radius:10px;
+      overflow:hidden;
+    }
+    .progress-fill {
+      height:100%; background:linear-gradient(135deg,#4a90e2,#6a11cb);
+      width:0%; transition:width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>📒 Student Hub</h2>
+    <a href="notebook.html">📓 Notebook</a>
+    <a href="timetable.html">📅 Timetable</a>
+    <a href="tasks.html">✅ Tasks</a>
+    <a href="#">⚙️ Settings</a>
+  </div>
+
+  <!-- Main content -->
+  <div class="topbar">
+    <!-- Hotbar -->
+    <div class="hotbar">
+      <input type="text" id="searchInput" placeholder="🔍 Search tasks...">
+      <div class="bell" id="bellIcon">🔔 <span id="bellIndicator"></span></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <button onclick="filterTasks('all')">All</button>
+      <button onclick="filterTasks('today')">Today</button>
+      <button onclick="filterTasks('completed')">Completed</button>
+      <button onclick="filterTasks('pending')">Pending</button>
+    </div>
+
+    <!-- Task list -->
+    <div class="tasks" id="taskList"></div>
+
+    <!-- Progress bar -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p id="progressText">0% completed</p>
+    </div>
+  </div>
+
+  <script>
+    const taskList=document.getElementById("taskList");
+    const searchInput=document.getElementById("searchInput");
+    const progressFill=document.getElementById("progressFill");
+    const progressText=document.getElementById("progressText");
+    const bellIndicator=document.getElementById("bellIndicator");
+
+    let tasksByDate=JSON.parse(localStorage.getItem("tasksByDate"))||{};
+    let allTasks=[];
+    Object.keys(tasksByDate).forEach(date=>{
+      tasksByDate[date].forEach(task=>allTasks.push({...task,date}));
+    });
+
+    function renderTasks(filter="all"){
+      taskList.innerHTML="";
+      let filtered=allTasks.filter(task=>{
+        if(filter==="today"){
+          const today=new Date();
+          const todayStr=`${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
+          return task.date===todayStr;
+        }
+        if(filter==="completed") return task.done;
+        if(filter==="pending") return !task.done;
+        return true;
+      }).filter(task=>task.text.toLowerCase().includes(searchInput.value.toLowerCase()));
+
+      if(filtered.length===0){ taskList.innerHTML="<p>No tasks found.</p>"; return; }
+
+      filtered.forEach((task,i)=>{
+        const div=document.createElement("div"); div.className="task";
+        const check=document.createElement("input"); check.type="checkbox"; check.checked=task.done||false;
+        check.onchange=()=>{task.done=check.checked; updateStorage(); renderTasks(filter);};
+        const text=document.createElement("input"); text.type="text"; text.value=task.text;
+        text.oninput=()=>{task.text=text.value; updateStorage();};
+        const category=document.createElement("select");
+        ["study","personal","other"].forEach(c=>{
+          const opt=document.createElement("option"); opt.value=c; opt.textContent=c; if(task.category===c) opt.selected=true; category.appendChild(opt);
+        });
+        category.onchange=()=>{task.category=category.value; updateStorage();};
+        const del=document.createElement("button"); del.textContent="❌";
+        del.onclick=()=>{allTasks.splice(i,1); updateStorage(); renderTasks(filter);};
+        div.append(check,text,category,del);
+        taskList.appendChild(div);
+      });
+      updateProgress();
+    }
+
+    function updateStorage(){
+      let grouped={};
+      allTasks.forEach(task=>{
+        if(!grouped[task.date]) grouped[task.date]=[];
+        grouped[task.date].push(task);
+      });
+      tasksByDate=grouped;
+      localStorage.setItem("tasksByDate",JSON.stringify(tasksByDate));
+    }
+
+    function updateProgress(){
+      const total=allTasks.length;
+      const completed=allTasks.filter(t=>t.done).length;
+      const percent=total?Math.round((completed/total)*100):0;
+      progressFill.style.width=percent+"%";
+      progressText.textContent=`${percent}% completed`;
+      if(allTasks.some(t=>{
+        const today=new Date();
+        const todayStr=`${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
+        return t.date===todayStr && !t.done;
+      })){
+        bellIndicator.className="bell-indicator";
+      } else {
+        bellIndicator.className="";
+      }
+    }
+
+    function filterTasks(type){ renderTasks(type); }
+
+    searchInput.oninput=()=>renderTasks("all");
+
+    renderTasks();
+  </script>
+</body>
+</html> 
