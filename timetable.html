@@ -70,151 +70,234 @@
       color:white; font-weight:bold; cursor:pointer;
     }
     .add-btn:hover { opacity:0.9; }
+
+    /* Autosave label */
+    .autosave { margin-top:10px; font-size:14px; color:#555; }
   </style>
 </head>
+
 <body>
+
   <!-- Calendar -->
   <div class="calendar">
     <h2>📅 Select a Date</h2>
+
     <div class="calendar-controls">
       <button id="prevMonth">◀</button>
       <span id="monthLabel"></span>
       <button id="nextMonth">▶</button>
     </div>
+
     <table id="calendarTable"></table>
   </div>
 
   <!-- Timetable -->
   <div class="timetable">
     <h2 id="selectedDate">Select a date</h2>
+
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="🔍 Search tasks...">
     </div>
+
     <div class="tasks" id="tasksContainer">
       <p>No tasks scheduled yet.</p>
     </div>
+
     <button class="add-btn" id="addTaskBtn">➕ Add Task</button>
+
+    <div class="autosave" id="timetableSave">Not saved</div>
   </div>
 
-  <script>
-    const calendarTable=document.getElementById("calendarTable");
-    const tasksContainer=document.getElementById("tasksContainer");
-    const selectedDateHeading=document.getElementById("selectedDate");
-    const addTaskBtn=document.getElementById("addTaskBtn");
-    const searchInput=document.getElementById("searchInput");
-    const monthLabel=document.getElementById("monthLabel");
-
-    let today=new Date();
-    let currentMonth=today.getMonth();
-    let currentYear=today.getFullYear();
-    let tasksByDate=JSON.parse(localStorage.getItem("tasksByDate"))||{};
-    let currentDate=null;
-
-    function renderCalendar(){
-      const firstDay=new Date(currentYear,currentMonth,1).getDay();
-      const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
-      monthLabel.textContent=new Date(currentYear,currentMonth).toLocaleString('default',{month:'long',year:'numeric'});
-      let html="<tr>"+["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>`<th>${d}</th>`).join("")+"</tr><tr>";
-      for(let i=0;i<firstDay;i++) html+="<td></td>";
-      for(let d=1;d<=daysInMonth;d++){
-        if((d+firstDay-1)%7===0) html+="</tr><tr>";
-        html+=`<td data-day="${d}">${d}</td>`;
-      }
-      html+="</tr>";
-      calendarTable.innerHTML=html;
-    }
-    renderCalendar();
-
-    document.getElementById("prevMonth").onclick=()=>{currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar();};
-    document.getElementById("nextMonth").onclick=()=>{currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar();};
-
-    calendarTable.addEventListener("click",e=>{
-      if(e.target.dataset.day){
-        document.querySelectorAll(".calendar td").forEach(td=>td.classList.remove("selected"));
-        e.target.classList.add("selected");
-        currentDate=`${e.target.dataset.day}/${currentMonth+1}/${currentYear}`;
-        selectedDateHeading.textContent=`📅 Timetable for ${currentDate}`;
-        renderTasks(currentDate);
-      }
-    });
-
-    function renderTasks(dateStr){
-      tasksContainer.innerHTML="";
-      let filtered=(tasksByDate[dateStr]||[]).filter(task=>task.text.toLowerCase().includes(searchInput.value.toLowerCase()));
-      if(filtered.length===0){ tasksContainer.innerHTML="<p>No tasks scheduled yet.</p>"; return; }
-      filtered.forEach((task,i)=>{
-        const div=document.createElement("div");
-        div.className="task category-"+task.category;
-        const check=document.createElement("input"); check.type="checkbox"; check.checked=task.done||false;
-        check.onchange=()=>{tasksByDate[dateStr][i].done=check.checked; saveLocal();};
-        const time=document.createElement("input"); time.type="time"; time.value=task.time;
-        time.oninput=()=>{tasksByDate[dateStr][i].time=time.value; saveLocal();};
-        const text=document.createElement("input"); text.type="text"; text.value=task.text;
-        text.oninput=()=>{tasksByDate[dateStr][i].text=text.value; saveLocal();};
-        const category=document.createElement("select");
-        ["study","personal","other"].forEach(c=>{
-          const opt=document.createElement("option"); opt.value=c; opt.textContent=c; if(task.category===c) opt.selected=true; category.appendChild(opt);
-        });
-        category.onchange=()=>{tasksByDate[dateStr][i].category=category.value; saveLocal();};
-        const del=document.createElement("button"); del.textContent="❌";
-        del.onclick=()=>{tasksByDate[dateStr].splice(i,1); saveLocal(); renderTasks(dateStr);};
-        div.append(check,time,text,category,del);
-        tasksContainer.appendChild(div);
-      });
-    }
-
-    function saveLocal(){ localStorage.setItem("tasksByDate",JSON.stringify(tasksByDate)); }
-
-    addTaskBtn.onclick=()=>{
-      if(!currentDate){ alert("Please select a date first."); return; }
-      if(!tasksByDate[currentDate]) tasksByDate[currentDate]=[];
-      tasksByDate[currentDate].push({time:"09:00",text:"New Task",category:"study",done:false});
-      saveLocal(); renderTasks(currentDate);
-      
-    };
-
-    searchInput.oninput=()=>{ if(currentDate) renderTasks(currentDate); };
-    
-  </script>
-  
-</body>
-</<!-- Extra modal fields -->
-<select id="taskRepeat">
-  <option value="none">No Repeat</option>
-  <option value="daily">Daily</option>
-  <option value="weekly">Weekly</option>
-</select>
-<div class="autosave" id="timetableSave">Not saved</div>
+  <!-- Extra Task Fields -->
+  <select id="taskRepeat" style="display:none;">
+    <option value="none">No Repeat</option>
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+  </select>
 
 <script>
-  // Extend saveTask logic
-  const saveTaskBtn=document.getElementById('saveTask');
-  saveTaskBtn.addEventListener('click',()=>{
-    const date=document.getElementById('taskDate').value;
-    const time=document.getElementById('taskTime').value;
-    const text=document.getElementById('taskText').value.trim();
-    const category=document.getElementById('taskCategory').value;
-    const repeat=document.getElementById('taskRepeat').value;
-    if(!date||!time||!text) return;
-    const d=new Date(date);
-    const dateStr=`${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-    const tasksByDate=JSON.parse(localStorage.getItem('tasksByDate'))||{};
-    if(!tasksByDate[dateStr]) tasksByDate[dateStr]=[];
-    tasksByDate[dateStr].push({time,text,category,repeat,done:false});
-    localStorage.setItem('tasksByDate',JSON.stringify(tasksByDate));
-    document.getElementById('timetableSave').textContent='Saved ✔';
+  const calendarTable = document.getElementById("calendarTable");
+  const tasksContainer = document.getElementById("tasksContainer");
+  const selectedDateHeading = document.getElementById("selectedDate");
+  const addTaskBtn = document.getElementById("addTaskBtn");
+  const searchInput = document.getElementById("searchInput");
+  const monthLabel = document.getElementById("monthLabel");
+
+  let today = new Date();
+  let currentMonth = today.getMonth();
+  let currentYear = today.getFullYear();
+  let tasksByDate = JSON.parse(localStorage.getItem("tasksByDate")) || {};
+  let currentDate = null;
+
+  function renderCalendar() {
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    monthLabel.textContent = new Date(currentYear, currentMonth)
+      .toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    let html = "<tr>" + ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+      .map(d => `<th>${d}</th>`).join("") + "</tr><tr>";
+
+    for (let i = 0; i < firstDay; i++) html += "<td></td>";
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      if ((d + firstDay - 1) % 7 === 0) html += "</tr><tr>";
+      html += `<td data-day="${d}">${d}</td>`;
+    }
+
+    html += "</tr>";
+    calendarTable.innerHTML = html;
+  }
+
+  renderCalendar();
+
+  document.getElementById("prevMonth").onclick = () => {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  };
+
+  document.getElementById("nextMonth").onclick = () => {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+  };
+
+  calendarTable.addEventListener("click", e => {
+    if (e.target.dataset.day) {
+      document.querySelectorAll(".calendar td").forEach(td => td.classList.remove("selected"));
+      e.target.classList.add("selected");
+
+      currentDate = `${e.target.dataset.day}/${currentMonth + 1}/${currentYear}`;
+      selectedDateHeading.textContent = `📅 Timetable for ${currentDate}`;
+
+      renderTasks(currentDate);
+    }
   });
 
-  // Drag‑drop support
-  const tasksContainer=document.getElementById('tasksContainer');
-  tasksContainer.addEventListener('dragstart',e=>{
-    if(e.target.classList.contains('task')) e.dataTransfer.setData('text/plain',e.target.dataset.index);
+  function renderTasks(dateStr) {
+    tasksContainer.innerHTML = "";
+    let filtered = (tasksByDate[dateStr] || [])
+      .filter(task => task.text.toLowerCase().includes(searchInput.value.toLowerCase()));
+
+    if (filtered.length === 0) {
+      tasksContainer.innerHTML = "<p>No tasks scheduled yet.</p>";
+      return;
+    }
+
+    filtered.forEach((task, i) => {
+      const div = document.createElement("div");
+      div.className = "task category-" + task.category;
+      div.draggable = true;
+      div.dataset.index = i;
+
+      const check = document.createElement("input");
+      check.type = "checkbox";
+      check.checked = task.done || false;
+      check.onchange = () => {
+        tasksByDate[dateStr][i].done = check.checked;
+        saveLocal();
+      };
+
+      const time = document.createElement("input");
+      time.type = "time";
+      time.value = task.time;
+      time.oninput = () => {
+        tasksByDate[dateStr][i].time = time.value;
+        saveLocal();
+      };
+
+      const text = document.createElement("input");
+      text.type = "text";
+      text.value = task.text;
+      text.oninput = () => {
+        tasksByDate[dateStr][i].text = text.value;
+        saveLocal();
+      };
+
+      const category = document.createElement("select");
+      ["study", "personal", "other"].forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        if (task.category === c) opt.selected = true;
+        category.appendChild(opt);
+      });
+      category.onchange = () => {
+        tasksByDate[dateStr][i].category = category.value;
+        saveLocal();
+      };
+
+      const del = document.createElement("button");
+      del.textContent = "❌";
+      del.onclick = () => {
+        tasksByDate[dateStr].splice(i, 1);
+        saveLocal();
+        renderTasks(dateStr);
+      };
+
+      div.append(check, time, text, category, del);
+      tasksContainer.appendChild(div);
+    });
+  }
+
+  function saveLocal() {
+    localStorage.setItem("tasksByDate", JSON.stringify(tasksByDate));
+    document.getElementById("timetableSave").textContent = "Saved ✔";
+  }
+
+  addTaskBtn.onclick = () => {
+    if (!currentDate) { alert("Please select a date first."); return; }
+
+    if (!tasksByDate[currentDate]) tasksByDate[currentDate] = [];
+
+    tasksByDate[currentDate].push({
+      time: "09:00",
+      text: "New Task",
+      category: "study",
+      repeat: "none",
+      done: false
+    });
+
+    saveLocal();
+    renderTasks(currentDate);
+  };
+
+  searchInput.oninput = () => {
+    if (currentDate) renderTasks(currentDate);
+  };
+
+  /* ========================
+       DRAG & DROP HANDLERS
+     ======================== */
+
+  tasksContainer.addEventListener('dragstart', e => {
+    if (e.target.classList.contains('task')) {
+      e.dataTransfer.setData('text/plain', e.target.dataset.index);
+    }
   });
-  tasksContainer.addEventListener('drop',e=>{
+
+  tasksContainer.addEventListener('drop', e => {
     e.preventDefault();
-    const from=e.dataTransfer.getData('text/plain');
-    const to=e.target.closest('.task').dataset.index;
-    // reorder logic here…
+    const from = e.dataTransfer.getData('text/plain');
+    const toTask = e.target.closest('.task');
+
+    if (!toTask) return;
+
+    const to = toTask.dataset.index;
+
+    // Swap tasks
+    const temp = tasksByDate[currentDate][from];
+    tasksByDate[currentDate][from] = tasksByDate[currentDate][to];
+    tasksByDate[currentDate][to] = temp;
+
+    saveLocal();
+    renderTasks(currentDate);
   });
-  tasksContainer.addEventListener('dragover',e=>e.preventDefault());
+
+  tasksContainer.addEventListener('dragover', e => e.preventDefault());
 </script>
+
+</body>
+</html>
