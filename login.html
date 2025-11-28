@@ -1,160 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Login | Student Hub</title>
-  <style>
-    body {
-      margin:0; font-family:'Segoe UI',sans-serif;
-      height:100vh; display:flex; align-items:center; justify-content:center;
-      background:linear-gradient(135deg,#6a11cb,#2575fc,#ff6a00);
-      background-size:400% 400%;
-      animation: gradientBG 15s ease infinite;
-    }
-    @keyframes gradientBG {
-      0%{background-position:0% 50%;}
-      50%{background-position:100% 50%;}
-      100%{background-position:0% 50%;}
-    }
-    .login-card {
-      background:white; padding:2rem; border-radius:12px;
-      box-shadow:0 8px 20px rgba(0,0,0,0.3);
-      width:320px; text-align:center;
-    }
-    .login-card h2 { margin-bottom:1rem; color:#333; }
-    .login-card input {
-      width:100%; padding:0.8rem; margin:0.5rem 0;
-      border:1px solid #ccc; border-radius:8px;
-    }
-    .login-card button {
-      width:100%; padding:0.8rem; margin-top:1rem;
-      border:none; border-radius:8px;
-      background:linear-gradient(135deg,#4a90e2,#6a11cb);
-      color:white; font-weight:bold; cursor:pointer;
-    }
-    .login-card button:hover { opacity:0.9; }
-    .links { margin-top:1rem; font-size:0.9rem; }
-    .links a { color:#6a11cb; text-decoration:none; margin:0 0.5rem; cursor:pointer; }
-    .links a:hover { text-decoration:underline; }
-    .show-pass { display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; }
+<meta charset="UTF-8">
+<title>Login | Student Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+    --grad: linear-gradient(135deg,#6a11cb,#2575fc);
+    --shadow: 0 4px 18px rgba(0,0,0,0.2);
+    --radius: 14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI";}
+body{
+    height:100vh;display:flex;justify-content:center;align-items:center;
+    background:#f4f4ff;
+}
 
-    /* Modal styling */
-    .modal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
-      z-index:2000;
-    }
-    .modal-content {
-      background:white; padding:2rem; border-radius:12px;
-      width:320px; box-shadow:0 6px 12px rgba(0,0,0,0.3);
-      text-align:center;
-    }
-    .modal-content h2 { margin-top:0; }
-    .modal-content input {
-      width:100%; padding:0.8rem; margin:0.5rem 0;
-      border:1px solid #ccc; border-radius:8px;
-    }
-    .modal-content button {
-      width:100%; padding:0.8rem; margin-top:1rem;
-      border:none; border-radius:8px;
-      background:linear-gradient(135deg,#4a90e2,#6a11cb);
-      color:white; font-weight:bold; cursor:pointer;
-    }
-    .close-btn {
-      margin-top:0.5rem; background:#e74c3c; color:white;
-    }
-  </style>
+.container{
+    width:350px;background:white;padding:25px;border-radius:var(--radius);
+    box-shadow:var(--shadow);
+}
+
+h2{
+    text-align:center;margin-bottom:20px;font-weight:800;
+    background:var(--grad);-webkit-background-clip:text;
+    background-clip:text;color:transparent;
+}
+
+.input-box{margin-bottom:15px;position:relative;}
+.input-box input{
+    width:100%;padding:12px;border-radius:10px;border:1px solid #ccc;
+}
+.show-btn{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    cursor:pointer;
+}
+
+.link{margin:5px 0;text-align:right;}
+.link a{color:#6a11cb;text-decoration:none;font-weight:bold;}
+
+.btn{
+    width:100%;padding:12px;background:var(--grad);color:white;
+    border:none;border-radius:10px;cursor:pointer;font-weight:bold;
+}
+
+.box{
+    display:none;margin-top:20px;background:#f4f4ff;padding:12px;
+    border-radius:10px;
+}
+.box input{
+    width:100%;padding:10px;border-radius:10px;border:1px solid #aaa;
+    margin-bottom:10px;
+}
+</style>
 </head>
+
 <body>
-  <div class="login-card">
-    <h2>🔑 Login</h2>
-    <form action="index.html">
-      <input type="text" placeholder="Email or Username" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <div class="show-pass">
-        <input type="checkbox" id="togglePass"> <label for="togglePass">Show Password</label>
-      </div>
-      <button type="submit">Login</button>
-    </form>
-    <div class="links">
-      <a id="forgotLink">Forgot Password?</a> |
-      <a id="signupLink">New User? Sign Up</a>
+
+<div class="container">
+
+<h2>Student Hub Login</h2>
+
+<!-- Login -->
+<div id="loginArea">
+
+    <div class="input-box">
+        <input id="loginEmail" type="email" placeholder="Email">
     </div>
-  </div>
 
-  <!-- Forgot Password Modal -->
-  <div class="modal" id="forgotModal">
-    <div class="modal-content">
-      <h2>Forgot Password</h2>
-      <input type="email" id="forgotEmail" placeholder="Enter your email" required>
-      <button onclick="resetPassword()">Send Reset Link</button>
-      <button class="close-btn" onclick="closeModal('forgotModal')">Close</button>
+    <div class="input-box">
+        <input id="loginPass" type="password" placeholder="Password">
+        <span class="show-btn" id="toggleLoginPass">👁</span>
     </div>
-  </div>
 
-  <!-- Sign Up Modal -->
-  <div class="modal" id="signupModal">
-    <div class="modal-content">
-      <h2>Sign Up</h2>
-      <input type="text" id="signupName" placeholder="Full Name" required>
-      <input type="email" id="signupEmail" placeholder="Email" required>
-      <input type="password" id="signupPass" placeholder="Password" required>
-      <input type="password" id="signupConfirm" placeholder="Confirm Password" required>
-      <div class="show-pass">
-        <input type="checkbox" id="toggleSignupPass"> <label for="toggleSignupPass">Show Passwords</label>
-      </div>
-      <button onclick="registerUser()">Register</button>
-      <button class="close-btn" onclick="closeModal('signupModal')">Close</button>
-    </div>
-  </div>
+    <div class="link"><a href="#" id="openForgot">Forgot?</a></div>
+    <div class="link"><a href="#" id="openSignup">New User?</a></div>
 
-  <script>
-    // Show/hide login password
-    document.getElementById('togglePass').addEventListener('change',function(){
-      const pass=document.getElementById('password');
-      pass.type=this.checked?'text':'password';
-    });
+    <button class="btn" id="loginBtn">Login</button>
+</div>
 
-    // Open modals
-    document.getElementById('forgotLink').addEventListener('click',()=>document.getElementById('forgotModal').style.display='flex');
-    document.getElementById('signupLink').addEventListener('click',()=>document.getElementById('signupModal').style.display='flex');
+<!-- Signup -->
+<div class="box" id="signupBox">
+    <input id="newName" placeholder="Full Name">
+    <input id="newEmail" type="email" placeholder="Email">
+    <input id="newPass" type="password" placeholder="Password">
+    <button class="btn" id="signupBtn">Create Account</button>
+</div>
 
-    // Close modal helper
-    function closeModal(id){ document.getElementById(id).style.display='none'; }
+<!-- Forgot Password -->
+<div class="box" id="forgotBox">
+    <input id="forgotMail" type="email" placeholder="Your Email">
+    <button class="btn" id="resetBtn">Send Reset Link</button>
+</div>
 
-    // Forgot password function
-    function resetPassword(){
-      const email=document.getElementById('forgotEmail').value;
-      if(email){
-        alert("Password reset link sent to "+email);
-        closeModal('forgotModal');
-      }
+</div>
+
+<script>
+
+/* ============ DATABASE STRUCTURE ============
+users = {
+   "aryan@gmail.com" : {
+       name:"Aryan Mishra",
+       password:"12345",
+
+       tasks: [...],
+       notebooks: {...},
+       timetable: {...}
+   }
+}
+================================================ */
+let users = JSON.parse(localStorage.getItem("users")) || {};
+let currentUser = localStorage.getItem("currentUser");
+
+/* Auto redirect if already logged in */
+if(currentUser){
+    window.location.href="index.html";
+}
+
+/* SHOW/HIDE PASSWORD */
+document.getElementById("toggleLoginPass").onclick = function(){
+    let p=document.getElementById("loginPass");
+    if(p.type==="password"){ p.type="text"; this.innerHTML="🙈"; }
+    else{ p.type="password"; this.innerHTML="👁"; }
+};
+
+/* OPEN SIGNUP */
+document.getElementById("openSignup").onclick=function(e){
+    e.preventDefault();
+    document.getElementById("signupBox").style.display="block";
+    document.getElementById("forgotBox").style.display="none";
+};
+
+/* OPEN FORGOT */
+document.getElementById("openForgot").onclick=function(e){
+    e.preventDefault();
+    document.getElementById("forgotBox").style.display="block";
+    document.getElementById("signupBox").style.display="none";
+};
+
+/* CREATE ACCOUNT */
+document.getElementById("signupBtn").onclick=function(){
+    let name=document.getElementById("newName").value.trim();
+    let email=document.getElementById("newEmail").value.trim();
+    let pass=document.getElementById("newPass").value.trim();
+
+    if(name===""||email===""||pass===""){
+        alert("Fill all fields");
+        return;
+    }
+    if(users[email]){
+        alert("User already exists");
+        return;
     }
 
-    // Show/hide signup passwords
-    document.getElementById('toggleSignupPass').addEventListener('change',function(){
-      const pass=document.getElementById('signupPass');
-      const confirm=document.getElementById('signupConfirm');
-      const type=this.checked?'text':'password';
-      pass.type=type; confirm.type=type;
-    });
+    // create user object
+    users[email]={
+        name:name,
+        password:pass,
+        tasks:[],
+        notebooks:{},
+        timetable:{}
+    };
 
-    // Register user function
-    function registerUser(){
-      const name=document.getElementById('signupName').value.trim();
-      const email=document.getElementById('signupEmail').value.trim();
-      const pass=document.getElementById('signupPass').value;
-      const confirm=document.getElementById('signupConfirm').value;
-      if(!name||!email||!pass||!confirm){ alert("Please fill all fields"); return; }
-      if(pass!==confirm){ alert("Passwords do not match"); return; }
-      alert("Welcome "+name+"! Your account has been created.");
-      closeModal('signupModal');
+    localStorage.setItem("users",JSON.stringify(users));
+    alert("Account created!");
+};
+
+/* LOGIN */
+document.getElementById("loginBtn").onclick=function(){
+    let email=document.getElementById("loginEmail").value.trim();
+    let pass=document.getElementById("loginPass").value.trim();
+
+    if(!users[email]){
+        alert("User not found!");
+        return;
+    }
+    if(users[email].password!==pass){
+        alert("Incorrect password!");
+        return;
     }
 
-    // Close modals when clicking outside
-    window.addEventListener('click',(e)=>{
-      if(e.target.classList.contains('modal')) e.target.style.display='none';
-    });
-  </script>
+    localStorage.setItem("currentUser",email);
+    alert("Login successful!");
+
+    window.location.href="index.html";
+};
+
+/* FORGOT PASSWORD */
+document.getElementById("resetBtn").onclick=function(){
+    let mail=document.getElementById("forgotMail").value.trim();
+    if(!users[mail]){
+        alert("Account not found.");
+        return;
+    }
+    alert("Reset link sent to " + mail);
+};
+</script>
+
 </body>
 </html>

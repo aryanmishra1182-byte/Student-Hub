@@ -1,206 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tasks | Student Hub</title>
-  <style>
-    body {
-      margin:0; font-family:'Segoe UI',sans-serif;
-      display:flex; height:100vh;
-      background:#f4f4f9; color:#333;
-    }
-    .sidebar {
-      width:220px; background:#2c2c2c; color:#f4f4f9;
-      display:flex; flex-direction:column; padding:1rem;
-    }
-    .sidebar h2 { margin:0 0 1rem; font-size:1.2rem; }
-    .sidebar a {
-      color:#f4f4f9; text-decoration:none; padding:0.6rem;
-      border-radius:6px; margin-bottom:0.5rem; display:block;
-      transition:background 0.3s;
-    }
-    .sidebar a:hover { background:#4a90e2; }
+<meta charset="UTF-8">
+<title>Tasks | Student Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .topbar {
-      flex:1; display:flex; flex-direction:column;
-    }
-    .hotbar {
-      background:#fff; padding:0.8rem 1rem;
-      display:flex; justify-content:space-between; align-items:center;
-      border-bottom:1px solid #ddd;
-    }
-    .hotbar input {
-      width:60%; padding:0.5rem;
-      border:1px solid #ccc; border-radius:8px;
-    }
+<style>
+:root{
+    --grad:linear-gradient(135deg,#6a11cb,#2575fc);
+    --glass:rgba(255,255,255,0.5);
+    --bg:#eef1ff;
+    --radius:16px;
+    --shadow:0 8px 25px rgba(0,0,0,0.15);
+}
 
-    .filters {
-      display:flex; gap:1rem; padding:1rem; background:#fafafa;
-    }
-    .filters button {
-      border:none; padding:0.5rem 1rem;
-      border-radius:6px; cursor:pointer;
-      background:#eee; transition:background 0.3s;
-    }
-    .filters button:hover { background:#4a90e2; color:white; }
+body{
+    margin:0;
+    font-family:"Segoe UI",sans-serif;
+    background:var(--bg);
+}
 
-    .tasks {
-      flex:1; overflow-y:auto; padding:1rem;
-    }
-    .task {
-      display:flex; align-items:center; gap:0.5rem;
-      background:white; padding:0.6rem; margin-bottom:0.5rem;
-      border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
-    }
-    .task input[type="checkbox"] { transform:scale(1.2); }
-    .task input[type="text"] {
-      flex:1; border:none; background:transparent;
-      font-size:1rem;
-    }
-    .task select {
-      border:1px solid #ccc; border-radius:4px; padding:0.3rem;
-    }
-    .task button {
-      border:none; background:#e74c3c; color:white;
-      border-radius:4px; padding:0.3rem 0.6rem; cursor:pointer;
-    }
+/* HEADER */
+.header{
+    background:var(--grad);
+    padding:25px 35px;
+    color:white;
+    font-weight:800;
+    font-size:28px;
+    border-bottom-left-radius:25px;
+    border-bottom-right-radius:25px;
+    box-shadow:var(--shadow);
+}
 
-    .progress-container { padding:1rem; background:#fafafa; }
-    .progress-bar {
-      height:20px; background:#eee; border-radius:10px; overflow:hidden;
-    }
-    .progress-fill {
-      height:100%; background:linear-gradient(135deg,#4a90e2,#6a11cb);
-      width:0%; transition:width 0.3s;
-    }
-  </style>
+/* MAIN AREA */
+.container{
+    margin:25px auto;
+    width:90%;
+    max-width:900px;
+}
+
+/* INPUT CARD */
+.addBox{
+    background:var(--glass);
+    padding:20px;
+    border-radius:var(--radius);
+    backdrop-filter:blur(12px);
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+}
+
+.addBox input, .addBox select{
+    padding:10px;
+    border-radius:var(--radius);
+    border:1px solid #ccc;
+    width:100%;
+    margin-bottom:10px;
+}
+
+.addBox button{
+    padding:12px 20px;
+    background:var(--grad);
+    color:white;
+    border:none;
+    border-radius:var(--radius);
+    cursor:pointer;
+    font-weight:700;
+    width:100%;
+}
+.addBox button:hover{
+    opacity:0.9;
+}
+
+/* TASK LIST */
+.taskList{
+    background:var(--glass);
+    padding:20px;
+    border-radius:var(--radius);
+    backdrop-filter:blur(10px);
+    box-shadow:var(--shadow);
+}
+
+.taskItem{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:white;
+    padding:12px;
+    margin-bottom:12px;
+    border-radius:var(--radius);
+    border-left:5px solid #6a11cb;
+}
+
+.taskItem span{
+    font-size:15px;
+    font-weight:600;
+}
+
+.taskActions{
+    display:flex;
+    gap:10px;
+}
+
+.taskActions button{
+    border:none;
+    padding:6px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.del{
+    background:#ff4d4d;
+    color:white;
+}
+.done{
+    background:#22c55e;
+    color:white;
+}
+
+.cleared{
+    text-decoration:line-through;
+    opacity:0.6;
+}
+</style>
 </head>
 
 <body>
-  <div class="sidebar">
-    <h2>📒 Student Hub</h2>
-    <a href="notebook.html">📓 Notebook</a>
-    <a href="timetable.html">📅 Timetable</a>
-    <a href="tasks.html">✅ Tasks</a>
-    <a href="#">⚙️ Settings</a>
-  </div>
 
-  <div class="topbar">
-    <div class="hotbar">
-      <input type="text" id="searchInput" placeholder="🔍 Search tasks...">
+<div class="header">📝 Tasks</div>
+
+<div class="container">
+
+    <!-- ADD TASK BOX -->
+    <div class="addBox">
+        <input type="text" id="taskText" placeholder="Enter task..." />
+        
+        <select id="taskCat">
+            <option value="study">Study</option>
+            <option value="personal">Personal</option>
+            <option value="other">Other</option>
+        </select>
+
+        <button onclick="addTask()">Add Task</button>
     </div>
 
-    <div class="filters">
-      <button onclick="filterTasks('all')">All</button>
-      <button onclick="filterTasks('today')">Today</button>
-      <button onclick="filterTasks('completed')">Completed</button>
-      <button onclick="filterTasks('pending')">Pending</button>
+    <!-- TASK LIST -->
+    <div class="taskList" id="taskList">
+        <!-- tasks load here -->
     </div>
 
-    <div class="tasks" id="taskList"></div>
-
-    <div class="progress-container">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <p id="progressText">0% completed</p>
-    </div>
-  </div>
+</div>
 
 <script>
-let taskList=document.getElementById("taskList");
-let searchInput=document.getElementById("searchInput");
-let progressFill=document.getElementById("progressFill");
-let progressText=document.getElementById("progressText");
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-let tasksByDate = JSON.parse(localStorage.getItem("tasksByDate")) || {};
-let allTasks = [];
+/* SAVE */
+function save(){
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
 
-// Load tasks from timetable format
-Object.keys(tasksByDate).forEach(date=>{
-  tasksByDate[date].forEach(task=>{
-    allTasks.push({...task,date});
-  });
-});
+/* RENDER */
+function renderTasks(){
+    let box = document.getElementById("taskList");
+    box.innerHTML = "";
 
-function renderTasks(filter="all"){
-  taskList.innerHTML="";
+    if(tasks.length === 0){
+        box.innerHTML = `<p style="opacity:0.6;text-align:center">No tasks yet.</p>`;
+        return;
+    }
 
-  let filtered=allTasks.filter(task=>{
-    const todayStr = new Date().getDate()+"/"+(new Date().getMonth()+1)+"/"+new Date().getFullYear();
-    if(filter==="today") return task.date === todayStr;
-    if(filter==="completed") return task.done;
-    if(filter==="pending") return !task.done;
-    return true;
-  }).filter(task=>task.text.toLowerCase().includes(searchInput.value.toLowerCase()));
+    tasks.forEach((t, index)=>{
+        box.innerHTML += `
+        <div class="taskItem ${t.done ? "cleared" : ""}">
+            <span>${t.text} <small>(${t.cat})</small></span>
 
-  if(filtered.length===0){ taskList.innerHTML="<p>No tasks found.</p>"; return; }
-
-  filtered.forEach((task,i)=>{
-    const div=document.createElement("div");
-    div.className="task";
-
-    const check=document.createElement("input");
-    check.type="checkbox"; check.checked=task.done;
-    check.onchange=()=>{task.done=check.checked; updateStorage();};
-
-    const text=document.createElement("input");
-    text.type="text"; text.value=task.text;
-    text.oninput=()=>{task.text=text.value; updateStorage();};
-
-    const category=document.createElement("select");
-    ["study","personal","other"].forEach(c=>{
-      const opt=document.createElement("option");
-      opt.value=c; opt.textContent=c;
-      if(task.category===c) opt.selected=true;
-      category.appendChild(opt);
+            <div class="taskActions">
+                <button class="done" onclick="markDone(${index})">✔</button>
+                <button class="del" onclick="delTask(${index})">✖</button>
+            </div>
+        </div>`;
     });
-    category.onchange=()=>{task.category=category.value; updateStorage();};
-
-    const del=document.createElement("button");
-    del.textContent="❌";
-    del.onclick=()=>{
-      allTasks.splice(allTasks.indexOf(task),1);
-      updateStorage();
-      renderTasks(filter);
-    };
-
-    div.append(check,text,category,del);
-    taskList.appendChild(div);
-  });
-
-  updateProgress();
 }
 
-function updateStorage(){
-  let grouped={};
+/* ADD TASK */
+function addTask(){
+    let text = document.getElementById("taskText").value.trim();
+    let cat = document.getElementById("taskCat").value;
 
-  allTasks.forEach(task=>{
-    if(!grouped[task.date]) grouped[task.date]=[];
-    grouped[task.date].push({
-      text:task.text,
-      time:task.time,
-      category:task.category,
-      done:task.done,
-      repeat:task.repeat || "none"
+    if(text === ""){
+        alert("Enter a task first.");
+        return;
+    }
+
+    tasks.push({
+        text:text,
+        cat:cat,
+        done:false
     });
-  });
 
-  tasksByDate=grouped;
-  localStorage.setItem("tasksByDate", JSON.stringify(tasksByDate));
+    save();
+    renderTasks();
+
+    document.getElementById("taskText").value = "";
 }
 
-function updateProgress(){
-  const total=allTasks.length;
-  const completed=allTasks.filter(t=>t.done).length;
-  const percent=total?Math.round((completed/total)*100):0;
-  progressFill.style.width = percent+"%";
-  progressText.textContent = percent+"% completed";
+/* MARK DONE */
+function markDone(i){
+    tasks[i].done = !tasks[i].done;
+    save();
+    renderTasks();
 }
 
-function filterTasks(t){renderTasks(t);}
-searchInput.oninput=()=>renderTasks("all");
+/* DELETE TASK */
+function delTask(i){
+    tasks.splice(i, 1);
+    save();
+    renderTasks();
+}
 
+/* INITIAL LOAD */
 renderTasks();
 </script>
 
